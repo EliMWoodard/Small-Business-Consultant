@@ -8,6 +8,11 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
+// Homepage route
+app.get("/", (req, res) => {
+  res.send("Welcome to the Small Business Consultant! Ready to generate your audit?");
+});
+
 app.post("/generate", async (req, res) => {
   try {
     const filePath = await generateAudit(req.body);
