@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Small Business Consultant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Business Audit Generator</h1>
+  <form id="auditForm">
+    <input type="text" name="business_name" placeholder="Business Name" required>
+    <input type="text" name="owner_name" placeholder="Owner Name" required>
+    <button type="submit">Generate Audit</button>
+  </form>
+
+  <script>
+    document.getElementById('auditForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const business_name = e.target.business_name.value;
+      const owner_name = e.target.owner_name.value;
+
+      const response = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ business_name, owner_name })
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `${business_name.replace(/\s/g, '_')}_audit.pdf`;
+        link.click();
+      } else {
+        alert('Something went wrong generating the audit.');
+      }
+    });
+  </script>
+</body>
+</html>
