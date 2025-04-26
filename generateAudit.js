@@ -21,7 +21,12 @@ async function generateAudit(data) {
     .replace("{{owner_name}}", data.owner_name)
     .replace("{{gpt_output_goes_here}}", gptResponse.replace(/\n/g, "<br>"));
 
-  const browser = await puppeteer.launch({ headless: "new" });
+  // Updated Puppeteer launch to avoid downloading Chromium
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: "/usr/bin/google-chrome-stable",
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  });
   const page = await browser.newPage();
   await page.setContent(filledHTML, { waitUntil: "domcontentloaded" });
   const filePath = `./pdfs/${data.business_name.replace(/\s/g, "_")}_audit.pdf`;
