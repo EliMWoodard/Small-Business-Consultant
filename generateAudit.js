@@ -1,27 +1,29 @@
-const { OpenAI } = require("openai");
+const axios = require("axios");
 const fs = require("fs");
 const puppeteer = require("puppeteer");
 const template = fs.readFileSync("pdfTemplate.html", "utf-8");
 require("dotenv").config();
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 async function generateAudit(data) {
   const prompt = require("./promptTemplate")(data);
 
-  const chat = await openai.chat.completions.create({
-    messages: [{ role: "user", content: prompt }],
-    model: "gpt-4",
-  });
+  const response = await axios.post(
+    "https://api-inference.huggingface.co/models/google/flan-t5-large",
+    { inputs: prompt },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
+      },
+    }
+  );
 
-  const gptResponse = chat.choices[0].message.content;
+  const gptResponse = response.data[0]?.generated_text || "No response from model.";
 
   const filledHTML = template
     .replace("{{business_name}}", data.business_name)
     .replace("{{owner_name}}", data.owner_name)
     .replace("{{gpt_output_goes_here}}", gptResponse.replace(/\n/g, "<br>"));
 
-  // Updated Puppeteer launch to avoid downloading Chromium
   const browser = await puppeteer.launch({
     headless: true,
     executablePath: "/usr/bin/google-chrome-stable",
